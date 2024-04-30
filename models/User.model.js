@@ -20,7 +20,7 @@ const userSchema = new Schema(
       trim: true,
       unique: true, // Ensure that the email / login user is unique
     },
-    password: {
+    passwordHash: {
       type: String,
       required: [true, 'Password is required.'],
     },
