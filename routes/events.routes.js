@@ -18,10 +18,9 @@ router.get("/", async (req, res) => {
 // GET a single event by id (publicly accessible)
 router.get("/:eventId", async (req, res) => {
   try {
-    const event = await Event.findById(req.params.eventId).populate(
-      "organizer",
-      "username"
-    );
+    const event = await Event.findById(req.params.eventId)
+      .populate("organizer", "username")
+      .populate("attendees", "username"); // Populate usernames of attendees
     if (event) {
       res.status(200).json(event);
     } else {
@@ -31,6 +30,7 @@ router.get("/:eventId", async (req, res) => {
     res.status(500).json({ message: "Error retrieving event" });
   }
 });
+
 
 // POST a new event
 router.post("/", isAuthenticated, canModifyEvent, async (req, res) => {
@@ -58,6 +58,25 @@ router.put("/:eventId", isAuthenticated, canModifyEvent, async (req, res) => {
     res.status(500).json({ message: "Error updating event" });
   }
 });
+
+// PATCH route to add an attendee to an event
+router.patch("/:eventId/attend", isAuthenticated, async (req, res) => {
+  try {
+    const event = await Event.findByIdAndUpdate(
+      req.params.eventId,
+      { $addToSet: { attendees: req.user._id } }, // Use $addToSet to prevent duplicates
+      { new: true }
+    ).populate("attendees", "username");
+    if (event) {
+      res.status(200).json(event);
+    } else {
+      res.status(404).json({ message: "Event not found" });
+    }
+  } catch (err) {
+    res.status(500).json({ message: "Error adding attendee to event" });
+  }
+});
+
 
 // DELETE an event
 router.delete(
