@@ -1,6 +1,6 @@
 const router = require("express").Router();
 const Comment = require("../models/Comment.model");
-const { isAuthenticated } = require("../middleware/route-guard.middleware");
+const { isAuthenticated, canModifyComment } = require("../middleware/route-guard.middleware");
 
 // GET all comments for a specific event
 router.get("/event/:eventId", async (req, res) => {
