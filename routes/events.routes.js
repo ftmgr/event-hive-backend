@@ -77,6 +77,24 @@ router.patch("/:eventId/attend", isAuthenticated, async (req, res) => {
   }
 });
 
+// PATCH route to remove an attendee from an event
+router.patch("/:eventId/leave", isAuthenticated, async (req, res) => {
+  try {
+    const event = await Event.findByIdAndUpdate(
+      req.params.eventId,
+      { $pull: { attendees: req.user._id } }, // Use $pull to remove the user ID from attendees
+      { new: true }
+    ).populate("attendees", "username");
+    if (event) {
+      res.status(200).json(event);
+    } else {
+      res.status(404).json({ message: "Event not found" });
+    }
+  } catch (err) {
+    res.status(500).json({ message: "Error removing attendee from event" });
+  }
+});
+
 
 // DELETE an event
 router.delete(

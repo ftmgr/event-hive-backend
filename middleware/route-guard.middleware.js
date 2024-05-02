@@ -7,7 +7,7 @@ const isAuthenticated = (req, res, next) => {
   try {
     const token = req.headers.authorization.split(" ")[1]; // Assumes a 'Bearer token' format
     const payload = jwt.verify(token, process.env.TOKEN_SECRET);
-
+    console.log('PAYLOAD', payload)
     // Fetch the full user object excluding the password and attach it to req
     User.findById(payload.userId)
       .select("-passwordHash") // Exclude the password field

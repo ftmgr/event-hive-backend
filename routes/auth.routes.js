@@ -68,9 +68,23 @@ router.post("/login", async (req, res) => {
     }
 });
 
-// Verify
-router.get("/verify", /* exampleMiddleware, */ isAuthenticated, (req, res) => {
-    res.json({ message: "Hello", data: req.tokenPayload });
+// Verify route
+router.get("/verify", isAuthenticated, (req, res) => {
+    if (req.user) {
+        res.json({
+            message: "User verified successfully!",
+            user: {
+                _id: req.user._id,
+                username: req.user.username,
+                email: req.user.email,
+                userType: req.user.userType
+                // You can add more fields as needed
+            }
+        });
+    } else {
+        res.status(404).json({ message: "User not found" });
+    }
 });
+
 
 module.exports = router;
