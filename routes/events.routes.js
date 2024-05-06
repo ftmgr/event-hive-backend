@@ -6,14 +6,30 @@ const {
 } = require("../middleware/route-guard.middleware"); // Ensure the path matches your directory structure
 
 // GET all events (publicly accessible)
+// Example in an Express.js route
 router.get("/", async (req, res) => {
+  const { limit = 15, offset = 0, organizer, attendee, eventType } = req.query;
+  
+  const query = {};
+  if (organizer) query.organizer = organizer;
+  if (attendee) query.attendees = attendee; // Assuming you're passing the user ID to find events they're attending
+  if (eventType) query.eventType = eventType;
+
   try {
-    const events = await Event.find().populate("organizer", "username"); // Adjust fields as necessary
-    res.status(200).json(events);
+      const events = await Event.find(query)
+          .skip(parseInt(offset))
+          .limit(parseInt(limit))
+          .populate("organizer", "username")
+          .populate("attendees", "username"); // Adjust fields as necessary for populating attendee details
+
+      res.status(200).json(events);
   } catch (err) {
-    res.status(500).json({ message: "Error retrieving events" });
+      console.error("Error retrieving events:", err);
+      res.status(500).json({ message: "Error retrieving events" });
   }
 });
+
+
 
 // GET a single event by id (publicly accessible)
 router.get("/:eventId", async (req, res) => {
