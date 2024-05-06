@@ -13,7 +13,6 @@ router.get("/", (req, res) => {
 // Signup
 router.post("/signup", async (req, res) => {
     // Get back the data from the body
-    console.log(req.body);
     // Encrypt the password
     const salt = bcrypt.genSaltSync(13);
     const passwordHash = bcrypt.hashSync(req.body.password, salt);
@@ -35,7 +34,6 @@ router.post("/signup", async (req, res) => {
 // Login
 router.post("/login", async (req, res) => {
     // Get back the credentials from the body
-    console.log(req.body);
     // Check if we have a user with this email
     try {
         const potentialUser = await User.findOne({ email: req.body.email });
@@ -43,7 +41,6 @@ router.post("/login", async (req, res) => {
             // Check if the password is correct
             if (bcrypt.compareSync(req.body.password, potentialUser.passwordHash)) {
                 // User has the right credentials
-                console.log(process.env.TOKEN_SECRET);
                 const authToken = jwt.sign(
                     {
                         userId: potentialUser._id,
@@ -70,21 +67,23 @@ router.post("/login", async (req, res) => {
 
 // Verify route
 router.get("/verify", isAuthenticated, (req, res) => {
-    if (req.user) {
-        res.json({
-            message: "User verified successfully!",
-            user: {
-                _id: req.user._id,
-                username: req.user.username,
-                email: req.user.email,
-                userType: req.user.userType
-                // You can add more fields as needed
-            }
-        });
-    } else {
-        res.status(404).json({ message: "User not found" });
-    }
+    res.status(200).json({ message: "User verified successfully!" });
 });
 
 
+router.get("/user-details", isAuthenticated, (req, res) => {
+    User.findById(req.userId)
+      .select("-passwordHash") // Exclude the password field
+      .then(user => {
+        if (!user) {
+          return res.status(404).json({ message: "User not found" });
+        }
+        res.json({ message: "User details fetched successfully", user });
+      })
+      .catch(err => {
+        res.status(500).json({ message: "Failed to retrieve user details", error: err });
+      });
+  });
+
+  
 module.exports = router;

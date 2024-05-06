@@ -20,7 +20,7 @@ router.post("/", isAuthenticated, async (req, res) => {
     const newComment = new Comment({
       commentText: req.body.commentText,
       eventId: req.body.eventId,
-      commenter: req.user._id, // Assuming the user ID is stored on req.user by isAuthenticated middleware
+      commenter: req.body.commenter, // Assuming the user ID is stored on req.user by isAuthenticated middleware
     });
     const savedComment = await newComment.save();
     res.status(201).json(savedComment);

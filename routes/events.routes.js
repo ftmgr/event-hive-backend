@@ -35,7 +35,8 @@ router.get("/:eventId", async (req, res) => {
 // POST a new event
 router.post("/", isAuthenticated, canModifyEvent, async (req, res) => {
   try {
-    const event = new Event({ ...req.body, organizer: req.user._id });
+    console.log('POSTING EVENT REQ AND RES BODY',req.body,res.body)
+    const event = new Event({ ...req.body, organizer: req.userId });
     const savedEvent = await event.save();
     res.status(201).json(savedEvent);
   } catch (err) {
@@ -64,7 +65,7 @@ router.patch("/:eventId/attend", isAuthenticated, async (req, res) => {
   try {
     const event = await Event.findByIdAndUpdate(
       req.params.eventId,
-      { $addToSet: { attendees: req.user._id } }, // Use $addToSet to prevent duplicates
+      { $addToSet: { attendees: req.userId } }, // Use $addToSet to prevent duplicates
       { new: true }
     ).populate("attendees", "username");
     if (event) {
@@ -82,7 +83,7 @@ router.patch("/:eventId/leave", isAuthenticated, async (req, res) => {
   try {
     const event = await Event.findByIdAndUpdate(
       req.params.eventId,
-      { $pull: { attendees: req.user._id } }, // Use $pull to remove the user ID from attendees
+      { $pull: { attendees: req.userId } }, // Use $pull to remove the user ID from attendees
       { new: true }
     ).populate("attendees", "username");
     if (event) {

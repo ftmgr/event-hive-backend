@@ -1,46 +1,64 @@
-const { Schema, model } = require('mongoose')
+const { Schema, model } = require('mongoose');
 
-// TODO: Please make sure you edit the Book model to whatever makes sense in this case
-const userSchema = new Schema(
-  {
-    username: {
+const userSchema = new Schema({
+  username: {
+    type: String,
+    required: [true, 'Username is required.'],
+    trim: true,
+    unique: true,
+  },
+  userType: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user',
+    trim: true,
+  },
+  email: {
+    type: String,
+    required: [true, 'Email is required.'],
+    trim: true,
+    unique: true,
+  },
+  passwordHash: {
+    type: String,
+    required: [true, 'Password is required.'],
+  },
+  info: { // Grouped additional user details in an object
+    firstName: {
       type: String,
-      required: [true, 'Username is required.'],
       trim: true,
-      unique: true,
     },
-    userType: {
+    lastName: {
       type: String,
-      enum: ['user', 'admin'],
-      default: 'user',
       trim: true,
     },
-    email: {
+    location: {
       type: String,
-      required: [true, 'Email is required.'],
       trim: true,
-      unique: true, // Ensure that the email / login user is unique
-    },
-    passwordHash: {
-      type: String,
-      required: [true, 'Password is required.'],
     },
     hobbies: {
       type: [String],
     },
-    organizedEvents: {
-      type: [{ type: Schema.Types.ObjectId, ref: 'Event' }],
+    age: {
+      type: Number,
     },
-    attendedEvents: {
-      type: [{ type: Schema.Types.ObjectId, ref: 'Event' }],
+    language: {
+      type: [String], // Assuming a user can speak multiple languages
     },
   },
-  {
-    // this second object adds extra properties: `createdAt` and `updatedAt`
-    timestamps: true,
-  }
-)
+  organizedEvents: {
+    type: [{ type: Schema.Types.ObjectId, ref: 'Event' }],
+  },
+  attendedEvents: {
+    type: [{ type: Schema.Types.ObjectId, ref: 'Event' }],
+  },
+  favoritedEvents: { // Added favorited events
+    type: [{ type: Schema.Types.ObjectId, ref: 'Event' }],
+  },
+}, {
+  timestamps: true, // Adds createdAt and updatedAt automatically
+});
 
-const User = model('User', userSchema)
+const User = model('User', userSchema);
 
-module.exports = User
+module.exports = User;
