@@ -86,4 +86,68 @@ router.get("/user-details", isAuthenticated, (req, res) => {
   });
 
   
+
+  router.patch("/update-profile", isAuthenticated, async (req, res) => {
+    const userId = req.userId;
+    const { username } = req.body;
+
+    try {
+        const existingUser = await User.findOne({ username });
+        if (existingUser && existingUser._id.toString() !== userId) {
+            return res.status(400).json({ message: "Username already taken." });
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(userId, req.body, {
+            new: true,
+            runValidators: true,
+            fields: '-passwordHash'
+        });
+        res.json({ message: "Profile updated successfully", user: updatedUser });
+    } catch (error) {
+        console.error("Error updating user profile:", error);
+        res.status(500).json({ message: "Failed to update user profile", error });
+    }
+});
+
+
+
+// PATCH add to favorite events
+router.patch("/favorite-add", isAuthenticated, async (req, res) => {
+    const userId = req.userId;
+    const { eventId } = req.body;
+
+    try {
+        const updatedUser = await User.findByIdAndUpdate(userId, {
+            $addToSet: { favoritedEvents: eventId }
+        }, {
+            new: true,
+            fields: '-passwordHash'
+        });
+        res.json({ message: "Event added to favorites successfully", user: updatedUser });
+    } catch (error) {
+        console.error("Error adding event to favorites:", error);
+        res.status(500).json({ message: "Failed to add event to favorites", error: error });
+    }
+});
+
+// PATCH remove from favorite events
+router.patch("/favorite-remove", isAuthenticated, async (req, res) => {
+    const userId = req.userId;
+    const { eventId } = req.body;
+
+    try {
+        const updatedUser = await User.findByIdAndUpdate(userId, {
+            $pull: { favoritedEvents: eventId }
+        }, {
+            new: true,
+            fields: '-passwordHash'
+        });
+        res.json({ message: "Event removed from favorites successfully", user: updatedUser });
+    } catch (error) {
+        console.error("Error removing event from favorites:", error);
+        res.status(500).json({ message: "Failed to remove event from favorites", error: error });
+    }
+});
+
+
 module.exports = router;
