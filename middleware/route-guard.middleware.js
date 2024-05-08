@@ -20,13 +20,24 @@ const isAuthenticated = (req, res, next) => {
 
 // Check if the user is admin
 const isAdmin = async (req, res, next) => {
-  if (req.body.userType.includes("admin")) {
-    console.log("I'm Gandalf the White ")
-    next();
-  } else {
-    res.status(403).json("Access denied: Requires admin privileges");
+  try {
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    
+    if (user.userType === "admin") {
+      console.log("Admin privileges confirmed.");
+      next();
+    } else {
+      res.status(403).json({ message: "Access denied: Requires admin privileges" });
+    }
+  } catch (error) {
+    console.error("Error verifying admin status:", error);
+    res.status(500).json({ message: "Server error during admin check" });
   }
 };
+
 
 // Middleware to check if the user can modify the event (create, update, delete)
 const canModifyEvent = async (req, res, next) => {
@@ -38,8 +49,13 @@ const canModifyEvent = async (req, res, next) => {
       return res.status(404).json({ message: "Event not found" });
     }
 
+    const user = await User.findById(req.userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
     // Check if the current user is the organizer or an admin
-    if (event.organizer.equals(req.userId) || req.user.userType.includes("admin")) {
+    if (event.organizer.equals(user._id) || user.userType === "admin") {
       next();
     } else {
       res.status(403).json({
@@ -51,6 +67,7 @@ const canModifyEvent = async (req, res, next) => {
     res.status(500).json({ message: "Server error during authorization check" });
   }
 };
+
 
 
 
