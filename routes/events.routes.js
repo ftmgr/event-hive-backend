@@ -9,7 +9,7 @@ const {
 
 
 // GET all events (publicly accessible)
-// Example in an Express.js route
+// WEIRD ROUTES ROUTE ROUTE
 // Adjusted backend route to include total count
 router.get("/", async (req, res) => {
   const { limit = 15, offset = 0, organizer, attendee, eventType } = req.query;
