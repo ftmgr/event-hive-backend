@@ -1,9 +1,12 @@
 const Event = require("../models/Event.model");
+const mongoose = require('mongoose');
 const router = require("express").Router();
 const {
   isAuthenticated,
   canModifyEvent,
 } = require("../middleware/route-guard.middleware"); // Ensure the path matches your directory structure
+
+
 
 // GET all events (publicly accessible)
 // Example in an Express.js route
@@ -32,6 +35,35 @@ router.get("/", async (req, res) => {
 });
 
 
+// Endpoint to get multiple events by a list of IDs
+router.get('/by-ids', async (req, res) => {
+  const { ids } = req.query;
+  if (!ids) {
+    return res.status(400).json({ message: "No IDs provided" });
+  }
+
+  try {
+    const eventIds = ids.split(',').map(id => {
+      try {
+        return new mongoose.Types.ObjectId(id);  // Use 'new' to construct ObjectId
+      } catch (error) {
+        console.error("Invalid ObjectId format:", id, error);
+        return null;
+      }
+    }).filter(id => id !== null);
+
+    if (eventIds.length === 0) {
+      return res.status(400).json({ message: "Invalid IDs provided" });
+    }
+
+    const events = await Event.find({ '_id': { $in: eventIds } });
+    res.status(200).json(events);
+  } catch (error) {
+    console.error("Error retrieving events by IDs:", error);
+    res.status(500).json({ message: "Error retrieving events", details: error.message });
+  }
+});
+
 
 
 // GET a single event by id (publicly accessible)
@@ -49,6 +81,9 @@ router.get("/:eventId", async (req, res) => {
     res.status(500).json({ message: "Error retrieving event" });
   }
 });
+
+
+
 
 
 // POST a new event
