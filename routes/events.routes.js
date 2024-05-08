@@ -49,7 +49,7 @@ router.get("/:eventId", async (req, res) => {
 
 
 // POST a new event
-router.post("/", isAuthenticated, canModifyEvent, async (req, res) => {
+router.post("/", isAuthenticated,  async (req, res) => {
   try {
     console.log('POSTING EVENT REQ AND RES BODY',req.body,res.body)
     const event = new Event({ ...req.body, organizer: req.userId });
@@ -61,20 +61,25 @@ router.post("/", isAuthenticated, canModifyEvent, async (req, res) => {
   }
 });
 
-// PUT update an event
-router.put("/:eventId", isAuthenticated, canModifyEvent, async (req, res) => {
+// PATCH update an event
+router.patch("/:eventId", isAuthenticated, canModifyEvent, async (req, res) => {
   try {
     const updatedEvent = await Event.findByIdAndUpdate(
       req.params.eventId,
       req.body,
       { new: true, runValidators: true }
     );
-    res.status(200).json(updatedEvent);
+    if (updatedEvent) {
+      res.status(200).json(updatedEvent);
+    } else {
+      res.status(404).json({ message: "No event found with this ID" });
+    }
   } catch (err) {
     console.error("Error updating event:", err);
-    res.status(500).json({ message: "Error updating event" });
+    res.status(500).json({ message: "Error updating event", error: err.toString() });
   }
 });
+
 
 // PATCH route to add an attendee to an event
 router.patch("/:eventId/attend", isAuthenticated, async (req, res) => {
