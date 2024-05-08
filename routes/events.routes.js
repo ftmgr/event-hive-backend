@@ -7,27 +7,30 @@ const {
 
 // GET all events (publicly accessible)
 // Example in an Express.js route
+// Adjusted backend route to include total count
 router.get("/", async (req, res) => {
   const { limit = 15, offset = 0, organizer, attendee, eventType } = req.query;
   
   const query = {};
   if (organizer) query.organizer = organizer;
-  if (attendee) query.attendees = attendee; // Assuming you're passing the user ID to find events they're attending
+  if (attendee) query.attendees = attendee;
   if (eventType) query.eventType = eventType;
 
   try {
+      const total = await Event.countDocuments(query); // Get total count of documents matching the query
       const events = await Event.find(query)
           .skip(parseInt(offset))
           .limit(parseInt(limit))
           .populate("organizer", "username")
-          .populate("attendees", "username"); // Adjust fields as necessary for populating attendee details
+          .populate("attendees", "username");
 
-      res.status(200).json(events);
+      res.status(200).json({ events, total }); // Send both events and total count
   } catch (err) {
       console.error("Error retrieving events:", err);
       res.status(500).json({ message: "Error retrieving events" });
   }
 });
+
 
 
 
