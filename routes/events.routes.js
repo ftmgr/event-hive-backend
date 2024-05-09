@@ -45,7 +45,7 @@ router.get('/by-ids', async (req, res) => {
   try {
     const eventIds = ids.split(',').map(id => {
       try {
-        return new mongoose.Types.ObjectId(id);  // Use 'new' to construct ObjectId
+        return new mongoose.Types.ObjectId(id);  // Validate each id is a valid ObjectId
       } catch (error) {
         console.error("Invalid ObjectId format:", id, error);
         return null;
@@ -56,13 +56,19 @@ router.get('/by-ids', async (req, res) => {
       return res.status(400).json({ message: "Invalid IDs provided" });
     }
 
-    const events = await Event.find({ '_id': { $in: eventIds } });
+    const events = await Event.find({ '_id': { $in: eventIds } })
+                              .populate({
+                                path: 'organizer',
+                                select: 'username'  // Only select the username of the organizer
+                              });
+
     res.status(200).json(events);
   } catch (error) {
     console.error("Error retrieving events by IDs:", error);
     res.status(500).json({ message: "Error retrieving events", details: error.message });
   }
 });
+
 
 
 
