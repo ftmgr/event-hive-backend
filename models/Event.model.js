@@ -31,7 +31,8 @@ const eventSchema = new Schema(
         },
         eventType: {
             type: String,
-            enum: ['Conference', 'Meetup', 'Seminar', 'Workshop'],  // Example categories
+            enum: ['Conference', 'Meetup', 'Seminar', 'Workshop', 'Social Gathering', 'Networking Event', 'Symposium', 'Concert', 'Party', 'Festival', 'Club Night', 'Themed Party',
+                'House Party', 'Outdoor Event', 'Cultural Celebration', 'Flex Work', 'Sport', 'Silent Disco'],  // Example categories
             trim: true,
         },
         attendees: {
